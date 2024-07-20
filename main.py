@@ -45,6 +45,8 @@ class Library:
             'status': "в наличии"
         }
         self.__write_json(books)                # Вносим новые данные в json
+        print()
+        print("Книга добавлена")
 
     def del_book(self, id_book: str) -> None:            # Метод удаления книги
         try:
@@ -52,12 +54,17 @@ class Library:
             books: dict[str, dict[str, str | int]] = self.__read_json()
             del books[str(id_book)]
             self.__write_json(books)
+            print()
+            print("Книга удалена")
         except ValueError:                  # Обработка ошибок
             print("Некорректный ввод. Введите только цифры")
+            id_book: str = self.try_input(input('Введите ID книги: '))
         except KeyError:
             print("Такой книги нет. Проверьте правильность ввода")
+            id_book: str = self.try_input(input('Введите ID книги: '))
         except Exception as e:
             print(f'Ошибка: {e}')
+            id_book: str = self.try_input(input('Введите ID книги: '))
 
     def book_search(self, user_choice: str, data_insearch: str | int) -> None:  # Метод поиска книг
         search_by: str = ('title', 'author', 'year')[int(user_choice) - 1]      # Настройка режима поиска книги
@@ -76,25 +83,30 @@ class Library:
             self.show_book(book)
 
     def change_status_book(self) -> None:  # Метод изменения статуса книги
-        book_id: str = ''
-        try:                       # Проверка правильности ввода ID книги
+        while True:
             book_id = self.try_input(input('Введите ID книги: '))
             if book_id not in self.__read_json():
                 print("Такой книги нет. Проверьте правильность ввода")
-        except ValueError:
-            print("Некорректный ввод. Введите только цифры")
-        except Exception as e:
-            print(f'Ошибка: {e}')
+                book_id= ''
+            if book_id != '':
+                break
 
-        book_status: str = self.try_input(input('Введите статус книги\n1 - в наличии\n2 - выдана: '))
-        if book_status in '12':
-            books = self.__read_json()
-            new_status: str = ('в наличии', 'выдана')[int(book_status)-1]  # Выбор нового статуса книги из множества
-            if books[book_id]['status'] == new_status:                # Сверка старого и нового статуса
-                print(f'Книга уже в статусе "{new_status}"')
+        while True:
+            book_status: str = self.try_input(input('Введите статус книги\n1 - в наличии\n2 - выдана: '))
+            if book_status in '12':
+                books = self.__read_json()
+                new_status: str = ('в наличии', 'выдана')[int(book_status)-1]  # Выбор нового статуса книги из множества
+                if books[book_id]['status'] == new_status:                # Сверка старого и нового статуса
+                    print(f'Книга уже в статусе "{new_status}"')
+                else:
+                    books[book_id]['status'] = ('в наличии', 'выдана')[int(book_status)-1]
+                    print()
+                    print('Статус книги изменён')
+                    self.__write_json(books)
+                    break
             else:
-                books[book_id]['status'] = ('в наличии', 'выдана')[int(book_status)-1]
-            self.__write_json(books)
+                print()
+                print('Нет такого статуса')
 
     def go(self) -> None:  # Метод главного меню
         if self.first_go:  # Проверка первого запуска и изменение атрибута first_go
